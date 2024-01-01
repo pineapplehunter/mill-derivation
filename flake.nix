@@ -26,6 +26,7 @@
               inherit src;
               depsHash = "sha256-0C1GzEk5p3IPReOHtUnd6sKwpA3NyBEKVwx9qyoItDE=";
             };
+            millCheckDeps = true;
             nativeBuildInputs = with pkgs;[
               circt
               millSetupHook
