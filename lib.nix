@@ -1,4 +1,7 @@
-{ callPackage }: {
-  millSetupHook = callPackage ./mill-setup-hook.nix { };
-  millFetchDeps = callPackage ./mill-fetch-deps.nix { };
+{ callPackage }:
+{
+  millPlatform = {
+    millSetupHook = callPackage ./mill-setup-hook.nix { };
+    millFetchDeps = callPackage ./mill-fetch-deps.nix { };
+  };
 }

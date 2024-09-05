@@ -1,5 +1,13 @@
-{ makeSetupHook, mill, jq }: makeSetupHook
 {
+  makeSetupHook,
+  mill,
+  jq,
+}:
+
+makeSetupHook {
   name = "mill-setup-hook.sh";
-  deps = [ mill jq ];
+  propagatedBuildInputs = [
+    mill
+    jq
+  ];
 } ./mill-setup-hook.sh

@@ -1,15 +1,24 @@
 {
   description = "A very basic flake";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+  };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      treefmt-nix,
+    }:
     {
       overlays.default = final: prev: {
-        inherit (final.callPackage self.lib { }) millFetchDeps millSetupHook;
+        inherit (final.callPackage self.lib { }) millPlatform;
       };
       lib = ./lib.nix;
-    } // (
+    }
+    // (
       let
         pkgs = import nixpkgs {
           system = "x86_64-linux";
@@ -22,14 +31,14 @@
           create-circuit = pkgs.stdenv.mkDerivation rec {
             name = "circuit";
             src = ./circuit-src;
-            millDeps = pkgs.millFetchDeps {
+            millDeps = pkgs.millPlatform.millFetchDeps {
               inherit src;
-              depsHash = "sha256-0C1GzEk5p3IPReOHtUnd6sKwpA3NyBEKVwx9qyoItDE=";
+              hash = "sha256-fv6fhgGyNNxw3EcT0hiZZefHzvic4KHtQUmCpHefK64=";
             };
             millCheckDeps = true;
-            nativeBuildInputs = with pkgs;[
+            nativeBuildInputs = with pkgs; [
               circt
-              millSetupHook
+              millPlatform.millSetupHook
             ];
             buildPhase = ''
               mill run
@@ -42,10 +51,15 @@
               mkdir -p $out
               cp -f *.sv *.anno.json $out
             '';
-            passthru.deps = millDeps;
+            CHISEL_FIRTOOL_PATH = "${pkgs.circt}/bin";
           };
         };
-        formatter.x86_64-linux = pkgs.nixpkgs-fmt;
+        formatter.x86_64-linux =
+          (treefmt-nix.lib.evalModule pkgs {
+            projectRootFile = "flake.nix";
+            programs.nixfmt.enable = true;
+            programs.scalafmt.enable = true;
+          }).config.build.wrapper;
       }
     );
 }
